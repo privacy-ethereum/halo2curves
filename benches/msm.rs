@@ -41,7 +41,7 @@ fn generate_curvepoints(k: u8) -> Vec<Point> {
         1 << k
     };
 
-    println!("Generating 2^{k} = {n} curve points..",);
+    println!("Generating 2^{k} = {n} curve points..");
     let timer = SystemTime::now();
     let bases = (0..n)
         .into_par_iter()
@@ -83,7 +83,7 @@ fn generate_coefficients(k: u8, bits: usize) -> Vec<Scalar> {
         _ => panic!("unexpected bit size {}", bits),
     };
 
-    println!("Generating 2^{k} = {n} coefficients..",);
+    println!("Generating 2^{k} = {n} coefficients..");
     let timer = SystemTime::now();
     let coeffs = (0..n)
         .into_par_iter()
