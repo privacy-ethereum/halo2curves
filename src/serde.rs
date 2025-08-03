@@ -259,7 +259,7 @@ where
         }
     }
 
-    fn pos_idetity() -> Option<u8> {
+    fn pos_identity() -> Option<u8> {
         match Self::CONFIG {
             CompressedFlagConfig::Extra => Some(1),
             CompressedFlagConfig::SingleSpare => None,
@@ -281,7 +281,7 @@ where
     }
 
     fn set_identity(&mut self, c: &C) {
-        if let Some(pos) = Self::pos_idetity() {
+        if let Some(pos) = Self::pos_identity() {
             Flag::set(pos, bool::from(c.is_identity()), self.flag_byte());
         };
     }
@@ -295,7 +295,7 @@ where
     }
 
     fn get_is_identity(&mut self) -> Option<subtle::Choice> {
-        Self::pos_idetity().map(|pos| Flag::get(pos, self.flag_byte()))
+        Self::pos_identity().map(|pos| Flag::get(pos, self.flag_byte()))
     }
 
     fn set_flags(&mut self, c: &C) {
@@ -367,7 +367,7 @@ where
                     (is_valid, is_identity)
                 }
 
-                // identitity flag inactive
+                //identity flag inactive
                 None => (subtle::Choice::from(1u8), is_zero),
             };
 
