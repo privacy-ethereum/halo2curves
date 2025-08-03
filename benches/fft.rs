@@ -29,7 +29,7 @@ const SEED: [u8; 16] = [
 fn generate_data(k: u32, mut rng: impl RngCore) -> Vec<Scalar> {
     let n = 1 << k;
     let timer = SystemTime::now();
-    println!("\n\nGenerating 2^{k} = {n} values..",);
+    println!("\n\nGenerating 2^{k} = {n} values..");
     let data: Vec<Scalar> = (0..n).map(|_| Scalar::random(&mut rng)).collect();
     let end = timer.elapsed().unwrap();
     println!(
