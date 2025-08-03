@@ -204,7 +204,7 @@ macro_rules! arith_test {
     };
 }
 
-// This test is autside the `arith_test` macro since it is only
+// This test is outside the `arith_test` macro since it is only
 // implemented for prime fields and quadratic extensions.
 pub(crate) fn sqrt_test<F: Field>(mut rng: impl RngCore, n: usize) {
     for _ in 0..n {
