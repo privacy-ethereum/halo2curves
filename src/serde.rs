@@ -26,7 +26,16 @@ impl<const T: usize> From<[u8; T]> for Repr<T> {
 
 impl<'a, const T: usize> From<&'a [u8]> for Repr<T> {
     fn from(bytes: &[u8]) -> Self {
-        Self(bytes.try_into().unwrap())
+        // Ensure the input slice has the correct length to prevent panic
+        if bytes.len() != T {
+            // If the slice is too short, pad with zeros; if too long, truncate
+            let mut result = [0u8; T];
+            let copy_len = bytes.len().min(T);
+            result[..copy_len].copy_from_slice(&bytes[..copy_len]);
+            Self(result)
+        } else {
+            Self(bytes.try_into().unwrap())
+        }
     }
 }
 
@@ -163,13 +172,25 @@ pub mod endian {
                 Endian::LE => {
                     el.iter_mut().enumerate().for_each(|(i, limb)| {
                         let off = i * 8;
-                        *limb = u64::from_le_bytes(res[off..off + 8].try_into().unwrap());
+                        // Ensure we have enough bytes to read
+                        if off + 8 <= res.len() {
+                            *limb = u64::from_le_bytes(res[off..off + 8].try_into().unwrap());
+                        } else {
+                            // If not enough bytes, use zeros for remaining limbs
+                            *limb = 0;
+                        }
                     });
                 }
                 Endian::BE => {
                     el.iter_mut().rev().enumerate().for_each(|(i, limb)| {
                         let off = i * 8;
-                        *limb = u64::from_be_bytes(res[off..off + 8].try_into().unwrap());
+                        // Ensure we have enough bytes to read
+                        if off + 8 <= res.len() {
+                            *limb = u64::from_be_bytes(res[off..off + 8].try_into().unwrap());
+                        } else {
+                            // If not enough bytes, use zeros for remaining limbs
+                            *limb = 0;
+                        }
                     });
                 }
             }
