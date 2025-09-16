@@ -57,13 +57,22 @@ serde = { version = "1.0", default-features = false, optional = true }
 serde_arrays = { version = "0.2.0", optional = true }
 
 [features]
-default = ["bits"]
+default = ["bits", "bn256"]
 asm = ["halo2derive/asm", "std"]
 bits = ["ff/bits"]
 bn256-table = []
 derive_serde = ["serde/derive", "serde_arrays", "hex"]
 print-trace = ["ark-std/print-trace"]
 std = ["rayon", "halo2derive/std", "plonky2_maybe_rayon/parallel"]
+bls12-381 = []
+bn256 = []
+grumpkin = []
+pasta = []
+pluto-eris = []
+secp256k1 = []
+secp256r1 = []
+secq256k1 = []
+t256 = []
 
 
 [profile.bench]
