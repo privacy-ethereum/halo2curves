@@ -177,6 +177,7 @@ pub mod endian {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) enum CompressedFlagConfig {
     // NOTE: if needed we can add fields for bit positions
 
