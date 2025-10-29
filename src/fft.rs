@@ -101,7 +101,7 @@ pub fn best_fft<Scalar: Field, G: FftGroup<Scalar>>(a: &mut [G], omega: Scalar, 
     }
 }
 
-/// This perform recursive butterfly arithmetic
+/// This performs recursive butterfly arithmetic
 pub fn recursive_butterfly_arithmetic<Scalar: Field, G: FftGroup<Scalar>>(
     a: &mut [G],
     n: usize,
