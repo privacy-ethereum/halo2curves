@@ -99,6 +99,52 @@ pub(crate) fn impl_arith_always_const(
     }
 }
 
+/// Generate sub/neg/mul/square/from_mont/montgomery_reduce using generic Rust.
+/// Used when asm handles add/double but mul/sub need generic implementation
+/// (e.g., for full-width 256-bit moduli where the asm Montgomery mul overflows).
+pub(crate) fn impl_arith_mul_only(field: &syn::Ident, num_limbs: usize, inv: u64) -> TokenStream {
+    let impl_sub = impl_sub(field, num_limbs);
+    let impl_neg = impl_neg(field, num_limbs);
+    let impl_mont = impl_mont(field, num_limbs, inv);
+    let impl_from_mont = impl_from_mont(field, num_limbs, inv);
+    let impl_mul = impl_mul(field, num_limbs, false);
+    let impl_square = impl_square(field, num_limbs);
+    let wide_num_limbs = num_limbs * 2;
+    quote::quote! {
+        impl #field {
+            #[inline(always)]
+            pub const fn sub(&self, rhs: &Self) -> Self {
+                #impl_sub
+            }
+
+            #[inline(always)]
+            pub const fn neg(&self) -> Self {
+                #impl_neg
+            }
+
+            #[inline(always)]
+            pub const fn mul(&self, rhs: &Self) -> Self{
+                #impl_mul
+            }
+
+            #[inline(always)]
+            pub const fn square(&self) -> Self{
+                #impl_square
+            }
+
+            #[inline(always)]
+            pub(crate) const fn montgomery_reduce(r: &[u64; #wide_num_limbs]) -> Self {
+                #impl_mont
+            }
+
+            #[inline(always)]
+            pub(crate) const fn from_mont(&self) -> [u64; #num_limbs] {
+                #impl_from_mont
+            }
+        }
+    }
+}
+
 fn impl_mul(field: &syn::Ident, num_limbs: usize, constant: bool) -> TokenStream {
     let mut gen = quote! { use crate::arithmetic::{adc, sbb, mac}; };
     for i in 0..num_limbs {

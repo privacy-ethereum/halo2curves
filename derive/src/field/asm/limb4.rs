@@ -607,3 +607,111 @@ pub(crate) fn impl_arith(field: &syn::Ident, inv: u64) -> TokenStream {
         }
     }
 }
+
+/// Generate asm only for add/double (safe for full-width 256-bit moduli).
+/// Used in hybrid mode: asm add/double + generic mul/sub/neg/from_mont.
+pub(crate) fn impl_arith_simple(field: &syn::Ident) -> TokenStream {
+    quote::quote! {
+        use core::arch::asm;
+        impl #field {
+            /// Doubles this field element.
+            #[inline]
+            pub fn double(&self) -> #field {
+                let mut r0: u64;
+                let mut r1: u64;
+                let mut r2: u64;
+                let mut r3: u64;
+                unsafe {
+                    asm!(
+                        "mov r8, qword ptr [{a_ptr} + 0]",
+                        "mov r9, qword ptr [{a_ptr} + 8]",
+                        "mov r10, qword ptr [{a_ptr} + 16]",
+                        "mov r11, qword ptr [{a_ptr} + 24]",
+                        "add r8, r8",
+                        "adc r9, r9",
+                        "adc r10, r10",
+                        "adc r11, r11",
+                        "mov rax, 0",
+                        "adc rax, 0",
+                        "mov r12, r8",
+                        "mov r13, r9",
+                        "mov r14, r10",
+                        "mov r15, r11",
+                        "sub r12, qword ptr [{m_ptr} + 0]",
+                        "sbb r13, qword ptr [{m_ptr} + 8]",
+                        "sbb r14, qword ptr [{m_ptr} + 16]",
+                        "sbb r15, qword ptr [{m_ptr} + 24]",
+                        "sbb rax, 0",
+                        "cmovc r12, r8",
+                        "cmovc r13, r9",
+                        "cmovc r14, r10",
+                        "cmovc r15, r11",
+                        m_ptr = in(reg) #field::MODULUS_LIMBS.as_ptr(),
+                        a_ptr = in(reg) self.0.as_ptr(),
+                        out("rax") _,
+                        out("r8") _,
+                        out("r9") _,
+                        out("r10") _,
+                        out("r11") _,
+                        out("r12") r0,
+                        out("r13") r1,
+                        out("r14") r2,
+                        out("r15") r3,
+                        options(pure, readonly, nostack)
+                    );
+                }
+                #field([r0, r1, r2, r3])
+            }
+
+            /// Adds `rhs` to `self`, returning the result.
+            #[inline]
+            pub fn add(&self, rhs: &Self) -> #field {
+                let mut r0: u64;
+                let mut r1: u64;
+                let mut r2: u64;
+                let mut r3: u64;
+                unsafe {
+                    asm!(
+                        "mov r8, qword ptr [{a_ptr} + 0]",
+                        "mov r9, qword ptr [{a_ptr} + 8]",
+                        "mov r10, qword ptr [{a_ptr} + 16]",
+                        "mov r11, qword ptr [{a_ptr} + 24]",
+                        "add r8, qword ptr [{b_ptr} + 0]",
+                        "adc r9, qword ptr [{b_ptr} + 8]",
+                        "adc r10, qword ptr [{b_ptr} + 16]",
+                        "adc r11, qword ptr [{b_ptr} + 24]",
+                        "mov rax, 0",
+                        "adc rax, 0",
+                        "mov r12, r8",
+                        "mov r13, r9",
+                        "mov r14, r10",
+                        "mov r15, r11",
+                        "sub r12, qword ptr [{m_ptr} + 0]",
+                        "sbb r13, qword ptr [{m_ptr} + 8]",
+                        "sbb r14, qword ptr [{m_ptr} + 16]",
+                        "sbb r15, qword ptr [{m_ptr} + 24]",
+                        "sbb rax, 0",
+                        "cmovc r12, r8",
+                        "cmovc r13, r9",
+                        "cmovc r14, r10",
+                        "cmovc r15, r11",
+                        m_ptr = in(reg) #field::MODULUS_LIMBS.as_ptr(),
+                        a_ptr = in(reg) self.0.as_ptr(),
+                        b_ptr = in(reg) rhs.0.as_ptr(),
+                        out("rax") _,
+                        out("r8") _,
+                        out("r9") _,
+                        out("r10") _,
+                        out("r11") _,
+                        out("r12") r0,
+                        out("r13") r1,
+                        out("r14") r2,
+                        out("r15") r3,
+                        options(pure, readonly, nostack)
+                    );
+                }
+                #field([r0, r1, r2, r3])
+            }
+        }
+    }
+}
