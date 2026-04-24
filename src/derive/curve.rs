@@ -290,6 +290,38 @@ macro_rules! new_curve_impl {
                     input * $name::curve_constant_3b()
                 }
             }
+
+            /// Variable-time mixed addition using madd-1998-cmo-2 (9M + 2S).
+            /// Falls back to complete formula for identity/doubling cases.
+            #[inline]
+            pub fn add_mixed_vartime(&self, other: &$name_affine) -> Self {
+                if bool::from(self.z.is_zero()) {
+                    return other.to_curve();
+                }
+
+                // The formula assumes non-identity affine input
+                if bool::from(other.is_identity()) {
+                    return *self;
+                }
+
+                let u = other.y * self.z - self.y;
+                let v = other.x * self.z - self.x;
+
+                // v == 0: same x-coordinate, fall back to complete addition
+                if bool::from(v.is_zero()) {
+                    return *self + other;
+                }
+
+                let uu = u.square();
+                let vv = v.square();
+                let vvv = v * vv;
+                let r = vv * self.x;
+                let a = uu * self.z - vvv - r.double();
+                let x3 = v * a;
+                let y3 = u * (r - a) - self.y * vvv;
+                let z3 = vvv * self.z;
+                $name { x: x3, y: y3, z: z3 }
+            }
         }
 
         impl $name_affine {
@@ -464,6 +496,11 @@ macro_rules! new_curve_impl {
                     z
                 };
                 CtOption::new(p, p.is_on_curve())
+            }
+
+            #[inline]
+            fn add_mixed_vartime(&self, other: &Self::AffineExt) -> Self {
+                self.add_mixed_vartime(other)
             }
         }
 

@@ -158,6 +158,45 @@ macro_rules! curve_testing_suite {
             }
         }
 
+        macro_rules! mixed_addition_vartime {
+            ($c: ident) => {
+                // identity + identity
+                assert_eq!(
+                    CurveExt::add_mixed_vartime(
+                        &$c::identity(),
+                        &<$c as group::Curve>::AffineRepr::identity()
+                    ),
+                    $c::identity()
+                );
+
+                // projective + affine-identity == projective
+                let a = $c::random(OsRng);
+                assert_eq!(
+                    CurveExt::add_mixed_vartime(&a, &<$c as group::Curve>::AffineRepr::identity()),
+                    a
+                );
+
+                // proj-identity + affine == affine.to_curve()
+                let b: <$c as CurveExt>::AffineExt = $c::random(OsRng).into();
+                assert_eq!(
+                    CurveExt::add_mixed_vartime(&$c::identity(), &b),
+                    b.to_curve()
+                );
+
+                // doubling: same x-coordinate triggers v==0 fallback
+                let a = $c::random(OsRng);
+                let a_affine: <$c as CurveExt>::AffineExt = a.into();
+                assert_eq!(CurveExt::add_mixed_vartime(&a, &a_affine), a.double());
+
+                // cross-check against complete-formula operator
+                for _ in 0..100 {
+                    let p = $c::random(OsRng);
+                    let q: <$c as CurveExt>::AffineExt = $c::random(OsRng).into();
+                    assert_eq!(CurveExt::add_mixed_vartime(&p, &q), p + q);
+                }
+            }
+        }
+
         macro_rules! multiplication {
             ($c: ident) => {
                 for _ in 1..1000 {
@@ -353,6 +392,7 @@ macro_rules! curve_testing_suite {
                 projective_affine_roundtrip!($curve);
                 projective_addition!($curve);
                 mixed_addition!($curve);
+                mixed_addition_vartime!($curve);
                 multiplication!($curve);
                 batch_normalize!($curve);
                 serdes!($curve);

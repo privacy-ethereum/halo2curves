@@ -65,7 +65,7 @@ jobs:
       matrix:
         target:
           - wasm32-unknown-unknown
-          - wasm32-wasi
+          - wasm32-wasip1
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
