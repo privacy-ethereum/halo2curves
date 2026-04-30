@@ -496,7 +496,7 @@ pub fn msm_best<C: CurveAffine>(coeffs: &[C::Scalar], bases: &[C]) -> C::Curve {
 
     // number of windows
     let number_of_windows = C::Scalar::NUM_BITS as usize / c + 1;
-    // accumumator for each window
+    // accumulator for each window
     let mut acc = vec![C::Curve::identity(); number_of_windows];
     acc.par_iter_mut().enumerate().rev().for_each(|(w, acc)| {
         // jacobian buckets for already scheduled points
