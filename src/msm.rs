@@ -16,11 +16,11 @@ const BATCH_SIZE: usize = 64;
 fn get_booth_index(window_index: usize, window_size: usize, el: &[u8]) -> i32 {
     // Booth encoding:
     // * step by `window` size
-    // * slice by size of `window + 1``
+    // * slice by size of `window + 1`
     // * each window overlap by 1 bit * append a zero bit to the least significant
     //   end
     // Indexing rule for example window size 3 where we slice by 4 bits:
-    // `[0, +1, +1, +2, +2, +3, +3, +4, -4, -3, -3 -2, -2, -1, -1, 0]``
+    // `[0, +1, +1, +2, +2, +3, +3, +4, -4, -3, -3, -2, -2, -1, -1, 0]`
     // So we can reduce the bucket size without preprocessing scalars
     // and remembering them as in classic signed digit encoding
 
@@ -491,18 +491,18 @@ pub fn msm_best<C: CurveAffine>(coeffs: &[C::Scalar], bases: &[C]) -> C::Curve {
 
     // coeffs to byte representation
     let coeffs: Vec<_> = coeffs.par_iter().map(|a| a.to_repr()).collect();
-    // copy bases into `Affine` to skip in on curve check for every access
+    // copy bases into `Affine` to skip on-curve check for every access
     let bases_local: Vec<_> = bases.par_iter().map(Affine::from).collect();
 
     // number of windows
     let number_of_windows = C::Scalar::NUM_BITS as usize / c + 1;
-    // accumumator for each window
+    // accumulator for each window
     let mut acc = vec![C::Curve::identity(); number_of_windows];
     acc.par_iter_mut().enumerate().rev().for_each(|(w, acc)| {
         // jacobian buckets for already scheduled points
         let mut j_bucks = vec![Bucket::<C>::None; 1 << (c - 1)];
 
-        // schedular for affine addition
+        // scheduler for affine addition
         let mut sched = Schedule::new(c);
 
         for (base_idx, coeff) in coeffs.iter().enumerate() {
