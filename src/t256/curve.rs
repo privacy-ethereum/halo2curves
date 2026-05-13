@@ -36,20 +36,21 @@ impl group::cofactor::CofactorGroup for T256 {
     }
 }
 
-// We take these parameters from: https://github.com/pag-crypto/sigpop/blob/eb7ea5914e8303b5484fe5bb8d200d08345a46c6/circ_fields/src/t256/curves/mod.rs
-// Generator   (x = 5,  y as in sigpop)
+// Generator (x = 3), the smallest x on the curve.
+// Consistent with Neuromancer (https://neuromancer.sk/std/other/Tom-256)
+// and the primary generator in sigpop (https://github.com/pag-crypto/sigpop).
 const T256_GENERATOR_X: Fp = Fp::from_raw([
-    0x0000000000000005,
+    0x0000000000000003,
     0x0000000000000000,
     0x0000000000000000,
     0x0000000000000000,
 ]);
 
 const T256_GENERATOR_Y: Fp = Fp::from_raw([
-    0x5826108A653DE28D,
-    0x0ED60B9E33CE397C,
-    0x5EFC7B55F6B24FBE,
-    0x3E86C0CFEBF2C716,
+    0x30B4954925B1F02D,
+    0xECD9D538A351BB3C,
+    0x4E97345CBE66600D,
+    0x5A6DD32DF58708E6,
 ]);
 
 // a  =  p − 3
