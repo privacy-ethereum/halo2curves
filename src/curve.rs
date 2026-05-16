@@ -40,7 +40,7 @@ pub trait CurveExt:
     /// by an element of multiplicative order 3.
     fn endo(&self) -> Self;
 
-    /// Return the Jacobian coordinates of this point.
+    /// Returns the Jacobian coordinates of this point.
     fn jacobian_coordinates(&self) -> (Self::Base, Self::Base, Self::Base);
 
     /// Requests a hasher that accepts messages and returns near-uniformly
